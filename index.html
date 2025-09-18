@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Juego de Matemáticas - Sumando</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #8a2be2, #4b0082);
+      font-family: Arial, sans-serif;
+      text-align: center;
+      color: #fff;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .game-container {
+      margin: 50px auto;
+      width: 350px;
+      padding: 25px;
+      border-radius: 15px;
+      background: rgba(75, 0, 130, 0.9);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      border: 2px solid #ffdf00;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .companion-character {
+      position: absolute;
+      right: -120px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid #ffdf00;
+      border-radius: 15px;
+      padding: 10px;
+      text-align: center;
+      display: none;
+      animation: slideIn 0.5s ease-out;
+      box-sizing: border-box;
+    }
+    .companion-character.active {
+      display: block;
+    }
+    .companion-avatar {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #ff69b4, #ffd700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .companion-name {
+      font-size: 12px;
+      font-weight: bold;
+      color: #ffdf00;
+      margin-bottom: 5px;
+    }
+    .companion-message {
+      font-size: 10px;
+      color: #fff;
+      background: rgba(0,0,0,0.3);
+      padding: 5px;
+      border-radius: 5px;
+      margin-top: 5px;
+      min-height: 30px;
+      line-height: 1.2;
+    }
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50%) translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+      }
+    }
+    @media (max-width: 600px) {
+      .companion-character {
+        position: static;
+        transform: none;
+        margin: 20px auto 0;
+        width: 90%;
+      }
+    }
+    h1 {
+      color: #ffdf00;
+      font-size: 28px;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    .level-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: rgba(255, 223, 0, 0.1);
+      border-radius: 10px;
+      width: 100%;
+    }
+    .coin-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .coin-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #ffd700, #ffed4e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #8a2be2;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .problem-container {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border: 2px dashed #ffdf00;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #problem {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 15px 0;
+      color: #ffdf00;
+    }
+    input[type="number"] {
+      padding: 10px;
+      margin: 15px;
+      width: 60%;
+      border-radius: 8px;
+      border: 2px solid #ffdf00;
+      color: #333;
+      font-size: 16px;
+      text-align: center;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 12px 24px;
+      background: linear-gradient(45deg, #ffdf00, #ffa500);
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      box-sizing: border-box;
+    }
+    button:hover {
+      background: linear-gradient(45deg, #daa520, #ff8c00);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+    #feedback {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #ffdf00;
+      font-weight: bold;
+      min-height: 25px;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+      gap: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .nav-buttons button {
+      flex: 1;
+      padding: 10px;
+      font-size: 12px;
+      box-sizing: border-box;
+    }
+    #store, #characters {
+      display: none;
+      margin-top: 20px;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #ffdf00;
+      width: 100%;
+      box-sizing: border-box;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+    .character-card {
+      background: rgba(255,255,255,0.1);
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #ffdf00;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-sizing: border-box;
+    }
+    .character-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #ff69b4, #ffd700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .character-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .character-info {
+      flex: 1;
+      text-align: left;
+      box-sizing: border-box;
+    }
+    .character-name {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    .character-price {
+      font-size: 14px;
+      color: #ffdf00;
+    }
+    .owned-character {
+      background: rgba(0, 255, 0, 0.2);
+      border-color: #90EE90;
+    }
+    .owned-character .character-avatar {
+      background: linear-gradient(45deg, #90EE90, #32CD32);
+    }
+    .character-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 230px;
+      overflow-y: auto;
+    }
+    .character-list li {
+      background: rgba(255,255,255,0.1);
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      box-sizing: border-box;
+    }
+    .character-list .character-avatar {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+    }
+    .select-character-btn {
+      position: absolute;
+      right: 10px;
+      background: linear-gradient(45deg, #32CD32, #228B22);
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+    .select-character-btn:hover {
+      background: linear-gradient(45deg, #228B22, #006400);
+      transform: scale(1.05);
+    }
+    .selected-character {
+      background: rgba(50, 205, 50, 0.3) !important;
+      border: 2px solid #32CD32 !important;
+    }
+    #survey {
+      display: none;
+      margin-top: 20px;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #ffdf00;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #survey input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ffdf00;
+      background: #fff;
+      color: #333;
+      box-sizing: border-box;
+    }
+    .success-animation {
+      animation: bounce 0.6s ease-in-out;
+    }
+    @keyframes bounce {
+      0%, 20%, 60%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      80% { transform: translateY(-5px); }
+    }
+    .math-icon {
+      font-size: 20px;
+      margin: 0 10px;
+    }
+	
+	/* Estilos para el pase premium */
+	.premium-badge {
+	  text-align: center;
+	  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+	  padding: 10px;
+	  border-radius: 10px;
+	  margin-bottom: 20px;
+	  box-shadow: 0 4px 10px rgba(238, 90, 36, 0.4);
+	  display: none;
+	}
+	.premium-badge.active {
+	  display: block;
+	}
+	.premium-price {
+	  font-size: 1.5em;
+	  font-weight: bold;
+	  color: #FFD700;
+	  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+	}
+	.premium-button {
+	  background: linear-gradient(45deg, #ffd700, #ff6b35);
+	  width: 100%;
+	  margin-bottom: 20px;
+	}
+	.modal {
+	  display: none;
+	  position: fixed;
+	  top: 0;
+	  left: 0;
+	  width: 100%;
+	  height: 100%;
+	  background: rgba(0,0,0,0.8);
+	  z-index: 1000;
+	  justify-content: center;
+	  align-items: center;
+	}
+	.modal-content {
+	  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	  padding: 20px;
+	  border-radius: 15px;
+	  max-width: 350px;
+	  width: 90%;
+	  text-align: center;
+	  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+	}
+	.close-btn {
+	  background: #f44336;
+	  border: none;
+	  padding: 10px 20px;
+	  border-radius: 8px;
+	  color: white;
+	  cursor: pointer;
+	  margin-top: 20px;
+	}
+	.status {
+	  margin-top: 20px;
+	  padding: 10px;
+	  border-radius: 10px;
+	  text-align: center;
+	  font-weight: bold;
+	  display: none;
+	}
+	.success {
+	  background: rgba(76, 175, 80, 0.2);
+	  border: 2px solid #4CAF50;
+	  color: #4CAF50;
+	}
+	.error {
+	  background: rgba(244, 67, 54, 0.2);
+	  border: 2px solid #f44336;
+	  color: #f44336;
+	}
+	.processing {
+	  background: rgba(255, 193, 7, 0.2);
+	  border: 2px solid #ffc107;
+	  color: #ffc107;
+	}
+	@keyframes pulse {
+	  0% { transform: scale(1); }
+	  50% { transform: scale(1.05); }
+	  100% { transform: scale(1); }
+	}
+	.pulse {
+	  animation: pulse 2s infinite;
+	}
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>🎯 Juego de Matemáticas - Sumando 🎯</h1>
+
+    <!-- Personaje Compañero -->
+    <div id="companion" class="companion-character" aria-live="polite" aria-atomic="true">
+      <div class="companion-avatar">
+        <canvas id="companion-canvas" width="80" height="80"></canvas>
+      </div>
+      <div class="companion-name" id="companion-name">Personaje</div>
+      <div class="companion-message" id="companion-message">¡Vamos a resolver juntos!</div>
+    </div>
+
+    <!-- Banner de Premium -->
+    <div id="premium-banner" class="premium-badge" role="region" aria-label="Pase Premium">
+      <h2>🏆 PASE PREMIUM</h2>
+      <div class="price">$60 MXN</div>
+      <p>¡Oferta por tiempo limitado!</p>
+    </div>
+    <div id="premium-status" style="display: none; color: #4CAF50; font-weight: bold; margin-bottom: 20px;">
+      ✅ ¡Eres usuario Premium!
+    </div>
+
+    <div class="level-info">
+      <div>
+        <span id="level">📚 Nivel: 1</span>
+      </div>
+      <div class="coin-display">
+        <div class="coin-icon" aria-hidden="true">💰</div>
+        <span id="coins" aria-live="polite" aria-atomic="true">0</span>
+      </div>
+    </div>
+
+    <div class="problem-container">
+      <div class="math-icon" aria-hidden="true">🧮</div>
+      <p id="problem">0 + 3 = ?</p>
+      <input id="answer" type="number" placeholder="Tu respuesta" aria-label="Escribe tu respuesta" />
+      <br />
+      <button onclick="checkAnswer()">✓ Verificar</button>
+    </div>
+
+    <p id="feedback" aria-live="polite" aria-atomic="true"></p>
+
+    <div class="nav-buttons">
+      <button onclick="toggleStore()">🏪 Tienda</button>
+      <button onclick="toggleCharacters()">👥 Personajes</button>
+    </div>
+
+    <!-- Botón de Pase Premium -->
+    <button id="buy-premium-btn" class="premium-button" onclick="buyPremium()">👑 Comprar Pase Premium</button>
+
+    <!-- Sección de Tienda -->
+    <div id="store" aria-live="polite" aria-atomic="true" style="display:none;">
+      <h3>🏪 Tienda de Personajes</h3>
+      <div class="character-card" id="card-mello">
+        <div class="character-avatar">
+          <canvas id="mello-canvas" width="60" height="60" aria-label="Avatar de Mello el Chico Cool"></canvas>
+        </div>
+        <div class="character-info">
+          <div class="character-name">Mello el Chico Cool</div>
+          <div class="character-price">💰 20 monedas</div>
+        </div>
+        <button id="btn-mello" onclick="buyCharacter('Mello', 20, 'mello')">Comprar</button>
+      </div>
+      <div class="character-card" id="card-mel">
+        <div class="character-avatar">
+          <canvas id="mel-canvas" width="60" height="60" aria-label="Avatar de Mela la Chica Linda"></canvas>
+        </div>
+        <div class="character-info">
+          <div class="character-name">Mela la Chica Linda</div>
+          <div class="character-price">💰 90 monedas</div>
+        </div>
+        <button id="btn-mel" onclick="buyCharacter('Mela', 90, 'mela')">Comprar</button>
+      </div>
+      <div class="character-card" id="card-luna">
+        <div class="character-avatar" aria-label="Avatar de Luna el Unicornio">🦄</div>
+        <div class="character-info">
+          <div class="character-name">Luna el Unicornio</div>
+          <div class="character-price">💰 150 monedas</div>
+        </div>
+        <button id="btn-luna" onclick="buyCharacter('Luna', 150, '🦄')">Comprar</button>
+      </div>
+      <!-- Personajes Premium -->
+      <div class="character-card premium locked-character" id="card-ninja">
+        <div class="premium-badge">PREMIUM</div>
+        <div class="character-avatar" aria-label="Avatar de Ninja Matemático">🥷</div>
+        <div class="character-info">
+          <div class="character-name">Ninja Matemático</div>
+          <div class="character-price premium-price-text">👑 Solo Premium</div>
+          <div class="character-price">💰 200 monedas</div>
+        </div>
+        <button id="btn-ninja" onclick="buyCharacter('Ninja', 200, '🥷', true)" disabled>Obtener</button>
+      </div>
+      <div class="character-card premium locked-character" id="card-alien">
+        <div class="premium-badge">PREMIUM</div>
+        <div class="character-avatar" aria-label="Avatar de Zyx el Alienígena">👽</div>
+        <div class="character-info">
+          <div class="character-name">Zyx el Alienígena</div>
+          <div class="character-price premium-price-text">👑 Solo Premium</div>
+          <div class="character-price">💰 105 monedas</div>
+        </div>
+        <button id="btn-alien" onclick="buyCharacter('Zyx', 105, '👽', true)" disabled>Obtener</button>
+      </div>
+      <div class="character-card premium locked-character" id="card-princess">
+        <div class="premium-badge">PREMIUM</div>
+        <div class="character-avatar" aria-label="Avatar de Princesa Numérica">👸</div>
+        <div class="character-info">
+          <div class="character-name">Princesa Numérica</div>
+          <div class="character-price premium-price-text">👑 Solo Premium</div>
+          <div class="character-price">💰 305 monedas</div>
+        </div>
+        <button id="btn-princess" onclick="buyCharacter('Princesa', 305, '👸', true)" disabled>Obtener</button>
+      </div>
+    </div>
+
+    <!-- Sección de Personajes -->
+    <div id="characters" aria-live="polite" aria-atomic="true" style="display:none;">
+      <h3>👥 Mis Personajes</h3>
+      <ul id="characterList" class="character-list" role="list"></ul>
+      <div id="no-characters" style="color: #ffdf00; font-style: italic;">
+        ¡Compra personajes en la tienda para verlos aquí! 🎮
+      </div>
+    </div>
+
+    <div id="survey">
+      <h3>📝 Encuesta para alumnos:</h3>
+      <p>🤔 ¿Cómo te pareció el juego?</p>
+      <input type="text" placeholder="Escribe tu opinión" aria-label="Opina sobre el juego" />
+      <p>📊 ¿Qué tan difícil se te hizo?</p>
+      <input type="text" placeholder="Escribe tu respuesta" aria-label="Dificultad del juego" />
+      <button onclick="submitSurvey()">📤 Enviar</button>
+    </div>
+  </div>
+
+  <!-- Modal de Pago -->
+  <div id="paymentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+      <h3 id="modalTitle">Procesando Pago</h3>
+      <p id="modalMessage">Redirigiendo al procesador de pagos...</p>
+      <div id="paymentDetails"></div>
+      <button class="close-btn" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+
+  <script>
+    const levels = [
+      { problem: "0 + 3", answer: 3 },
+      { problem: "3 + 1", answer: 4 },
+      { problem: "2 + 1", answer: 3 },
+      { problem: "0 + 1", answer: 1 },
+      { problem: "2 + 3", answer: 5 },
+      { problem: "3 + 2", answer: 5 },
+      { problem: "2 + 2", answer: 4 },
+      { problem: "5 + 3", answer: 8 },
+      { problem: "1 + 1", answer: 2 },
+      { problem: "2 + 1", answer: 3 },
+      { problem: "4 + 2", answer: 6 },
+      { problem: "2 + 5", answer: 7 },
+      { problem: "2 + 4", answer: 6 },
+      { problem: "1 + 4", answer: 5 },
+      { problem: "1 + 1", answer: 2 },
+      { problem: "3 + 2", answer: 5 },
+      { problem: "2 + 1", answer: 3 },
+      { problem: "4 + 2", answer: 6 },
+      { problem: "1 + 2", answer: 3 },
+      { problem: "4 + 2 + 1", answer: 7 },
+      { problem: "3 + 1 + 1", answer: 5 },
+      { problem: "6 + 2", answer: 8 },
+      { problem: "9 + 1", answer: 10 },
+      { problem: "5 + 3", answer: 8 },
+      { problem: "1 + 0 + 2", answer: 3 },
+      { problem: "1 + 1 + 1 + 1 + 1", answer: 5 },
+      { problem: "2 + 2 + 2", answer: 6 },
+      { problem: "3 + 3 + 3", answer: 9 },
+      { problem: "5 + 4", answer: 9 },
+      { problem: "3 + 5", answer: 8 },
+      { problem: "2 + 2", answer: 4 },
+      { problem: "4 + 4", answer: 8 },
+      { problem: "6 + 1", answer: 7 },
+      { problem: "3 + 2", answer: 5 },
+      { problem: "2 + 1", answer: 3 }
+    ];
+
+    let currentLevel = 0;
+    let coins = 0;
+    let characters = [];
+    let completedLevels = new Set();
+    let selectedCharacter = null;
+    let isPremium = false;
+
+    // Mensajes motivacionales para cada personaje
+    const characterMessages = {
+      mello: [
+        "¡Genial! ¡Sigue así!",
+        "¡Eres increíble!",
+        "¡Vamos por más!",
+        "¡Excelente trabajo!",
+        "¡Eres un matemático genial!"
+      ],
+      mela: [
+        "¡Qué bien lo haces!",
+        "¡Sigue adelante!",
+        "¡Eres muy inteligente!",
+        "¡Me encanta resolver contigo!",
+        "¡Fantástico!"
+      ],
+      luna: [
+        "¡Mágico! ¡Bien hecho!",
+        "¡La magia de las matemáticas!",
+        "¡Brillas como una estrella!",
+        "¡Eres mágicamente inteligente!",
+        "¡Sparkle! ¡Genial!"
+      ],
+      '🥷': [
+        "🥷 ¡Sigilo matemático perfecto!",
+        "⚡ ¡Velocidad ninja!",
+        "🌟 ¡Técnica secreta activada!",
+        "🥷 ¡Maestro de los números!",
+        "💨 ¡Rápido como el viento!"
+      ],
+      '👽': [
+        "👽 ¡Tecnología alienígena!",
+        "🛸 ¡Sabiduría galáctica!",
+        "⭐ ¡Desde otro planeta!",
+        "🌌 ¡Matemáticas cósmicas!",
+        "👽 ¡Inteligencia superior!"
+      ],
+      '👸': [
+        "👸 ¡Elegancia matemática!",
+        "💎 ¡Respuesta real!",
+        "👑 ¡Dignidad numérica!",
+        "✨ ¡Gracia y sabiduría!",
+        "👸 ¡Princesa de los números!"
+      ]
+    };
+
+    // Función para dibujar a Mello
+    function drawMello(canvas) {
+      const ctx = canvas.getContext('2d');
+      const scale = canvas.width / 200;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.scale(scale, scale);
+
+      // Cabeza
+      ctx.fillStyle = '#FFDBAC';
+      ctx.fillRect(60, 50, 80, 70);
+
+      // Cabello negro
+      ctx.fillStyle = '#2B2B2B';
+      ctx.fillRect(50, 30, 100, 40);
+
+      // Diadema
+      ctx.fillStyle = '#404040';
+      ctx.fillRect(55, 45, 90, 15);
+
+      // Ojos (rojos abiertos)
+      ctx.fillStyle = '#FF4444';
+      ctx.fillRect(70, 65, 20, 15);
+      ctx.fillRect(110, 65, 20, 15);
+
+      // Boca sonriente roja
+      ctx.fillStyle = '#FF4444';
+      ctx.fillRect(80, 95, 40, 10);
+
+      // Cuerpo - sudadera marrón
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(50, 120, 100, 60);
+
+      // Pantalones grises
+      ctx.fillStyle = '#555555';
+      ctx.fillRect(60, 180, 80, 40);
+
+      // Tenis blancos
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(50, 220, 30, 15);
+      ctx.fillRect(120, 220, 30, 15);
+
+      ctx.restore();
+    }
+
+    // Función para dibujar a Mela
+    function drawMela(canvas) {
+      const ctx = canvas.getContext('2d');
+      const scale = canvas.width / 200;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.scale(scale, scale);
+
+      // Cabeza
+      ctx.fillStyle = '#FFDBAC';
+      ctx.fillRect(60, 50, 80, 70);
+
+      // Cabello castaño
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(55, 30, 90, 50);
+
+      // Ojos (rojos abiertos)
+      ctx.fillStyle = '#FF4444';
+      ctx.fillRect(70, 65, 20, 15);
+      ctx.fillRect(110, 65, 20, 15);
+
+      // Boca sonriente roja
+      ctx.fillStyle = '#FF4444';
+      ctx.fillRect(80, 95, 40, 10);
+
+      // Cuerpo - blusa morada
+      ctx.fillStyle = '#9966CC';
+      ctx.fillRect(50, 120, 100, 50);
+
+      // Falda negra
+      ctx.fillStyle = '#2B2B2B';
+      ctx.fillRect(55, 170, 90, 30);
+
+      // Medias/calcetines blancos
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(60, 200, 15, 25);
+      ctx.fillRect(125, 200, 15, 25);
+
+      // Zapatos negros
+      ctx.fillStyle = '#2B2B2B';
+      ctx.fillRect(55, 225, 25, 10);
+      ctx.fillRect(120, 225, 25, 10);
+
+      ctx.restore();
+    }
+
+    // Función para seleccionar personaje compañero
+    function selectCompanion(character) {
+      selectedCharacter = character;
+      const companion = document.getElementById('companion');
+      const companionName = document.getElementById('companion-name');
+      const companionMessage = document.getElementById('companion-message');
+      const companionCanvas = document.getElementById('companion-canvas');
+
+      companion.classList.add('active');
+      companionName.textContent = character.name;
+
+      // Dibujar el personaje en el canvas del compañero
+      if (character.type === 'mello') {
+        drawMello(companionCanvas);
+      } else if (character.type === 'mela') {
+        drawMela(companionCanvas);
+      } else {
+        // Para personajes emoji
+        const ctx = companionCanvas.getContext('2d');
+        ctx.clearRect(0, 0, companionCanvas.width, companionCanvas.height);
+        ctx.font = '40px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(character.type, companionCanvas.width/2, companionCanvas.height/2);
+      }
+
+      // Mensaje inicial
+      const messages = characterMessages[character.type] || characterMessages['🦄'];
+      companionMessage.textContent = messages[0];
+
+      // Actualizar la lista visual
+      updateCharacterList();
+
+      alert(✨ ¡${character.name} ahora es tu compañero de matemáticas! ✨);
+
+      // Guardar personaje seleccionado
+      localStorage.setItem('selectedCharacter', JSON.stringify(character));
+    }
+
+    // Función para actualizar lista de personajes en "Mis Personajes"
+    function updateCharacterList() {
+      const list = document.getElementById('characterList');
+      const noCharacters = document.getElementById('no-characters');
+      list.innerHTML = '';
+
+      if (characters.length === 0) {
+        noCharacters.style.display = 'block';
+      } else {
+        noCharacters.style.display = 'none';
+        characters.forEach((char, index) => {
+          const li = document.createElement('li');
+
+          const avatarDiv = document.createElement('div');
+          avatarDiv.className = 'character-avatar';
+
+          if (char.type === 'mello' || char.type === 'mela') {
+            // Crear canvas avatar
+            const canvas = document.createElement('canvas');
+            canvas.width = 40;
+            canvas.height = 40;
+            avatarDiv.appendChild(canvas);
+
+            if (char.type === 'mello') drawMello(canvas);
+            else if (char.type === 'mela') drawMela(canvas);
+          } else {
+            avatarDiv.textContent = char.type;
+          }
+
+          const nameDiv = document.createElement('div');
+          nameDiv.className = 'character-name';
+          nameDiv.textContent = char.name;
+
+          li.appendChild(avatarDiv);
+          li.appendChild(nameDiv);
+
+          // Botón de seleccionar
+          const btn = document.createElement('button');
+          btn.className = 'select-character-btn';
+          btn.textContent = selectedCharacter && selectedCharacter.name === char.name ? 'Seleccionado' : 'Seleccionar';
+          if (selectedCharacter && selectedCharacter.name === char.name) {
+            li.classList.add('selected-character');
+            btn.disabled = true;
+          }
+          btn.addEventListener('click', () => {
+            selectCompanion(char);
+          });
+
+          li.appendChild(btn);
+
+          list.appendChild(li);
+        });
+      }
+    }
+
+    // Función para actualizar el mensaje del compañero
+    function updateCompanionMessage(isCorrect) {
+      if (!selectedCharacter) return;
+
+      const companionMessage = document.getElementById('companion-message');
+      const messages = characterMessages[selectedCharacter.type] || characterMessages['🦄'];
+
+      if (isCorrect) {
+        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+        companionMessage.textContent = randomMessage;
+      } else {
+        const encouragementMessages = [
+          "¡No te rindas!",
+          "¡Inténtalo otra vez!",
+          "¡Tú puedes hacerlo!",
+          "¡Piensa un poco más!"
+        ];
+        companionMessage.textContent = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+      }
+    }
+
+    function initializeCharacterImages() {
+      const melloCanvas = document.getElementById('mello-canvas');
+      const melaCanvas = document.getElementById('mel-canvas');
+
+      if (melloCanvas) drawMello(melloCanvas);
+      if (melaCanvas) drawMela(melaCanvas);
+    }
+
+    function updateLevel() {
+      if (currentLevel < levels.length) {
+        document.getElementById("level").textContent = "📚 Nivel: " + (currentLevel + 1);
+        document.getElementById("problem").textContent = levels[currentLevel].problem + " = ?";
+        document.getElementById("answer").value = "";
+        document.getElementById("feedback").textContent = "";
+      } else {
+        endGame();
+      }
+    }
+
+    function checkAnswer() {
+      const userAnswer = parseInt(document.getElementById("answer").value);
+      const correctAnswer = levels[currentLevel].answer;
+      const feedbackElement = document.getElementById("feedback");
+
+      if (isNaN(userAnswer)) {
+        feedbackElement.textContent = "⚠ Por favor ingresa un número";
+        return;
+      }
+
+      if (userAnswer === correctAnswer) {
+        if (!completedLevels.has(currentLevel)) {
+          coins += 8;
+          completedLevels.add(currentLevel);
+          document.getElementById("coins").textContent = coins;
+          feedbackElement.textContent = "🎉 ¡Correcto! +8 monedas";
+          feedbackElement.className = "success-animation";
+
+          // Actualizar mensaje del compañero
+          updateCompanionMessage(true);
+
+          setTimeout(() => {
+            currentLevel++;
+            updateLevel();
+            feedbackElement.className = "";
+          }, 1500);
+        } else {
+          feedbackElement.textContent = "✅ Este nivel ya fue completado.";
+        }
+      } else {
+        feedbackElement.textContent = "❌ Inténtalo de nuevo.";
+        // Actualizar mensaje del compañero para animar
+        updateCompanionMessage(false);
+      }
+    }
+
+    function endGame() {
+      alert("🎊 ¡Juego terminado! Has acumulado " + coins + " monedas. ¡Excelente trabajo!");
+      document.getElementById("survey").style.display = "block";
+    }
+
+    function toggleStore() {
+      const store = document.getElementById("store");
+      const charactersDiv = document.getElementById("characters");
+      if (store.style.display === "none" || store.style.display === "") {
+        store.style.display = "block";
+        charactersDiv.style.display = "none";
+      } else {
+        store.style.display = "none";
+      }
+    }
+
+    function toggleCharacters() {
+      const charactersDiv = document.getElementById("characters");
+      const store = document.getElementById("store");
+      if (charactersDiv.style.display === "none" || charactersDiv.style.display === "") {
+        charactersDiv.style.display = "block";
+        store.style.display = "none";
+      } else {
+        charactersDiv.style.display = "none";
+      }
+      updateCharacterList();
+    }
+
+    // Función para actualizar estado premium y UI relacionada
+    function updatePremiumUI() {
+      const premiumBanner = document.getElementById('premium-banner');
+      const premiumStatus = document.getElementById('premium-status');
+      const buyPremiumBtn = document.getElementById('buy-premium-btn');
+
+      if (isPremium) {
+        premiumBanner.classList.add('active');
+        premiumStatus.style.display = 'inline-block';
+        buyPremiumBtn.textContent = '✅ ¡Ya eres Premium!';
+        buyPremiumBtn.disabled = true;
+        buyPremiumBtn.style.background = '#666';
+
+        // Desbloquear personajes premium
+        unlockPremiumCharacters();
+      } else {
+        premiumBanner.classList.remove('active');
+        premiumStatus.style.display = 'none';
+        buyPremiumBtn.textContent = '👑 Comprar Pase Premium';
+        buyPremiumBtn.disabled = false;
+        buyPremiumBtn.style.background = 'linear-gradient(45deg, #ffd700, #ff6b35)';
+      }
+    }
+
+    // Función para comprar premium
+    function buyPremium() {
+      if (isPremium) {
+        alert('¡Ya eres usuario Premium!');
+        return;
+      }
+      processPayment();
+    }
+
+    // Función para desbloquear personajes premium
+    function unlockPremiumCharacters() {
+      const premiumCards = document.querySelectorAll('.character-card.premium');
+      premiumCards.forEach(card => {
+        card.classList.remove('locked-character');
+        const button = card.querySelector('button');
+        if (button && button.textContent === 'Obtener') {
+          button.disabled = false;
+          button.style.background = 'linear-gradient(45deg, #ffd700, #ff6b35)';
+        }
+      });
+    }
+
+    // Función mejorada para comprar personajes
+    function buyCharacter(name, price, avatar, isPremiumChar) {
+      // Verificar si es personaje premium y el usuario no tiene premium
+      if (isPremiumChar && !isPremium) {
+        alert('¡Este personaje es exclusivo para usuarios Premium! 👑\nCompra el pase Premium para desbloquearlo.');
+        return;
+      }
+      // Verificar si ya tiene el personaje
+      if (characters.some(char => char.name === name)) {
+        alert('¡Ya tienes este personaje!');
+        return;
+      }
+      // Para personajes premium, no cobrar monedas adicionales
+      if (isPremiumChar && isPremium) {
+        addCharacter(name, avatar, isPremiumChar);
+        return;
+      }
+      // Para personajes normales
+      if (coins >= price) {
+        coins -= price;
+        updateCoins();
+        addCharacter(name, avatar, isPremiumChar);
+      } else {
+        alert(Necesitas ${price} monedas para comprar este personaje. Tienes ${coins} monedas.);
+      }
+    }
+
+    // Función para agregar personaje a la colección
+    function addCharacter(name, avatar, isPremiumChar) {
+      const character = {
+        name: name,
+        type: avatar,
+        isPremium: isPremiumChar
+      };
+
+      characters.push(character);
+      updateCharacterList();
+      updateCharacterCards();
+
+      // Seleccionar automáticamente el nuevo personaje
+      selectCompanion(character);
+
+      alert(¡${name} se ha unido a tu equipo! 🎉);
+
+      // Guardar personajes
+      localStorage.setItem('characters', JSON.stringify(characters));
+    }
+
+    // Función para actualizar las tarjetas de personajes en la tienda
+    function updateCharacterCards() {
+      characters.forEach(char => {
+        const cardId = getCardIdFromName(char.name);
+        const card = document.getElementById(cardId);
+        const button = card?.querySelector('button');
+
+        if (card && button) {
+          card.classList.add('owned-character');
+          button.textContent = '✅ Tienes';
+          button.disabled = true;
+          button.style.background = '#666';
+        }
+      });
+    }
+
+    // Función auxiliar para obtener ID de tarjeta desde nombre
+    function getCardIdFromName(name) {
+      const nameMap = {
+        'Mello': 'card-mello',
+        'Mela': 'card-mel',
+        'Luna': 'card-luna',
+        'Ninja': 'card-ninja',
+        'Zyx': 'card-alien',
+        'Princesa': 'card-princess'
+      };
+      return nameMap[name] || null;
+    }
+
+    // Función para actualizar monedas
+    function updateCoins() {
+      document.getElementById("coins").textContent = coins;
+    }
+
+    // Función para procesar pagos (simulado)
+    function processPayment() {
+      const modal = document.getElementById('paymentModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMessage = document.getElementById('modalMessage');
+      const paymentDetails = document.getElementById('paymentDetails');
+
+      modal.style.display = 'flex';
+      modalTitle.textContent = 'Selecciona Método de Pago';
+      modalMessage.textContent = 'Elige cómo deseas pagar:';
+      paymentDetails.innerHTML = `
+        <div style="margin: 20px 0;">
+          <button onclick="simulatePayment('paypal')" style="background: #0070ba; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; width: 100%;">
+            💙 Pagar con PayPal ($60 MXN)
+          </button>
+
+          <button onclick="simulatePayment('card')" style="background: #635bff; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; width: 100%;">
+            💳 Tarjeta de Crédito/Débito ($60 MXN)
+          </button>
+
+          <button onclick="simulatePayment('crypto')" style="background: #f7931a; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; width: 100%;">
+            ₿ Pagar con Criptomonedas ($60 MXN)
+          </button>
+
+          <button onclick="simulatePayment('other')" style="background: #4CAF50; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; width: 100%;">
+            📱 Otros Métodos ($60 MXN)
+          </button>
+        </div>
+      `;
+    }
+
+    // Función para simular pagos
+    function simulatePayment(method) {
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMessage = document.getElementById('modalMessage');
+      const paymentDetails = document.getElementById('paymentDetails');
+
+      switch(method) {
+        case 'paypal':
+          modalTitle.textContent = 'PayPal';
+          modalMessage.textContent = 'Redirigiendo a PayPal para completar el pago...';
+          paymentDetails.innerHTML = `
+            <p>Precio: $60 MXN</p>
+            <p>Método: PayPal</p>
+            <div style="margin: 20px 0;">
+              <button onclick="completePayment()" style="background: #0070ba; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                Continuar con PayPal
+              </button>
+            </div>
+          `;
+          break;
+        case 'card':
+          modalTitle.textContent = 'Tarjeta de Crédito';
+          modalMessage.textContent = 'Ingresa los datos de tu tarjeta:';
+          paymentDetails.innerHTML = `
+            <div style="text-align: left; margin: 20px 0;">
+              <input type="text" placeholder="Número de tarjeta" style="width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+              <input type="text" placeholder="MM/AA" style="width: 48%; padding: 10px; margin: 5px 1%; border-radius: 5px; border: 1px solid #ccc;">
+              <input type="text" placeholder="CVV" style="width: 48%; padding: 10px; margin: 5px 1%; border-radius: 5px; border: 1px solid #ccc;">
+              <input type="text" placeholder="Nombre del titular" style="width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+            </div>
+            <button onclick="completePayment()" style="background: #635bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+              Pagar $60 MXN
+            </button>
+          `;
+          break;
+
+        case 'crypto':
+          modalTitle.textContent = 'Criptomonedas';
+          modalMessage.textContent = 'Selecciona tu criptomoneda preferida:';
+          paymentDetails.innerHTML = `
+            <div style="margin: 20px 0;">
+              <button onclick="showCryptoAddress('bitcoin')" style="background: #f7931a; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; width: 100%;">
+                Bitcoin (0.0003 BTC)
+              </button>
+              <button onclick="showCryptoAddress('ethereum')" style="background: #627eea; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; width: 100%;">
+                Ethereum (0.006 ETH)
+              </button>
+            </div>
+          `;
+          break;
+
+        case 'other':
+          modalTitle.textContent = 'Otros Métodos';
+          modalMessage.textContent = 'Métodos de pago disponibles en tu región:';
+          paymentDetails.innerHTML = `
+            <div style="margin: 20px 0;">
+              <button onclick="showOtherPayment('oxxo')" style="background: #e63946; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; width: 100%;">
+                OXXO Pay
+              </button>
+              <button onclick="showOtherPayment('spei')" style="background: #2a9d8f; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; width: 100%;">
+                Transferencia SPEI
+              </button>
+              <button onclick="showOtherPayment('mercadopago')" style="background: #00b1ea; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; width: 100%;">
+                Mercado Pago
+              </button>
+            </div>
+          `;
+          break;
+      }
+    }
+
+    function showCryptoAddress(crypto) {
+      const addresses = {
+        bitcoin: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+        ethereum: '0x742d35Cc6634C0532925a3b8D1c4d12A32b3b8f8'
+      };
+
+      document.getElementById('paymentDetails').innerHTML = `
+        <p>Envía exactamente a esta dirección:</p>
+        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; margin: 10px 0; word-break: break-all; font-family: monospace;">
+          ${addresses[crypto]}
+        </div>
+        <p>Una vez confirmada la transacción, tu pase se activará automáticamente.</p>
+        <button onclick="completePayment()" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+          Simular Confirmación
+        </button>
+      `;
+    }
+
+    function showOtherPayment(method) {
+      const methods = {
+        oxxo: 'Ve a cualquier OXXO y proporciona el código: 4578291635',
+        spei: 'Realiza una transferencia SPEI a la CLABE: 012345678901234567',
+        mercadopago: 'Redirigiendo a Mercado Pago...'
+      };
+
+      document.getElementById('paymentDetails').innerHTML = `
+        <p>${methods[method]}</p>
+        <button onclick="completePayment()" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px;">
+          Simular Pago Completado
+        </button>
+      `;
+    }
+
+    function completePayment() {
+      setTimeout(() => {
+        isPremium = true;
+        updatePremiumUI();
+        showPremiumModal();
+        localStorage.setItem('isPremium', 'true');
+        closeModal();
+
+        // Mostrar mensaje del compañero si hay uno seleccionado
+        if (selectedCharacter) {
+          showCompanionMessage('🎉 ¡Ahora eres Premium! ¡Increíble!');
+        }
+      }, 1500);
+    }
+
+    function showPremiumModal() {
+      const modal = document.getElementById('paymentModal');
+      modal.style.display = 'flex';
+      document.getElementById('modalTitle').textContent = '¡Premium Activado!';
+      document.getElementById('modalMessage').textContent = '¡Disfruta todos los beneficios premium!';
+      document.getElementById('paymentDetails').innerHTML = `
+        <p>🎉 ¡Bienvenido al club Premium!</p>
+        <p>• Tienes acceso a todos los niveles premium</p>
+        <p>• Personajes exclusivos desbloqueados</p>
+        <p>• Sin anuncios por 1 año</p>
+        <p>• Monedas dobles en cada partida</p>
+      `;
+    }
+
+    function closeModal() {
+      document.getElementById('paymentModal').style.display = 'none';
+    }
+
+    function showCompanionMessage(message) {
+      const companionMessage = document.getElementById('companion-message');
+      companionMessage.textContent = message;
+    }
+
+    // Función para inicializar estado premium y personajes al cargar el juego
+    function initializePremium() {
+      const savedPremium = localStorage.getItem('isPremium');
+      if (savedPremium === 'true') {
+        isPremium = true;
+        updatePremiumUI();
+      }
+
+      // Cargar personajes guardados
+      const savedCharacters = localStorage.getItem('characters');
+      if (savedCharacters) {
+        characters = JSON.parse(savedCharacters);
+        updateCharacterList();
+        updateCharacterCards();
+      }
+
+      // Cargar personaje seleccionado guardado
+      const savedSelectedChar = localStorage.getItem('selectedCharacter');
+      if (savedSelectedChar) {
+        const char = JSON.parse(savedSelectedChar);
+        // Buscar en personajes guardados
+        if (characters.some(c => c.name === char.name)) {
+          selectedCharacter = char;
+          selectCompanion(selectedCharacter);
+        }
+      }
+    }
+
+    function resetGame() {
+      if (confirm('¿Estás seguro de que quieres resetear todo el progreso?')) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    function submitSurvey() {
+      alert("📋 Encuesta enviada. ¡Gracias por participar! 🎓");
+      document.getElementById("survey").style.display = "none";
+    }
+
+    // Permitir respuesta con Enter
+    document.getElementById("answer").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        checkAnswer();
+      }
+    });
+
+    // Inicializar el juego
+    window.onload = function() {
+      initializeCharacterImages();
+      updateLevel();
+      updateCharacterList();
+      initializePremium();
+    };
+  </script>
+</body>
+</html>
